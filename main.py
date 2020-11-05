@@ -97,7 +97,6 @@ def main(_start=(0, 0), _goal=(30, 30)):
         if pathfind:
             ret, visited = a_star.step()
             if ret == goal:
-                print("GOAL REACHED")
                 pathfind = False
                 finished = True
                 success = True
@@ -105,7 +104,6 @@ def main(_start=(0, 0), _goal=(30, 30)):
                 for n in path[1:-1]:
                     grid[n[1]][n[0]] = 6
             if ret == None:
-                print("FAILURE")
                 pathfind = False
                 finished = True
                 success = False
