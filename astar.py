@@ -50,7 +50,7 @@ class AStar():
                     if not self.visited[neighbor]:
                         self.count += 1
                         self.openSet.put(
-                            (d(neighbor, self.goal), self.count, neighbor))
+                            (self.fScore[neighbor], self.count, neighbor))
                         self.qSize += 1
             return (current, visited)
 
@@ -63,9 +63,9 @@ class AStar():
 
 
 def d(curr: tuple, target: tuple):
-    x = (curr[0]-target[0])
-    y = (curr[1]-target[1])
-    return math.sqrt(x**2+y**2)
+    x = abs(curr[0]-target[0])
+    y = abs(curr[1]-target[1])
+    return x+y  # math.sqrt(x**2+y**2)
 
 
 if __name__ == "__main__":
