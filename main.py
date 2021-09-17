@@ -1,5 +1,6 @@
-import pygame
 import time
+import pygame
+
 from astar import AStar
 
 WINDOW_WIDTH = 800
@@ -16,25 +17,27 @@ BLUE = (0, 0, 200)
 BLACK = (50, 50, 50)
 
 #        0 empty, 1 visited, 2 path, 3 wall, 4 goal, 5 start, 6 final_path
-colors = [BLACK,    LIGHTYELLOW, YELLOW, WHITE, BLUE, CYAN, LIME]
+colors = [BLACK, LIGHTYELLOW, YELLOW, WHITE, BLUE,   CYAN,      LIME]
 
-blockSize = 20  # Set the size of the grid block
+BLOCK_SIZE = 20  # Set the size of the grid block
 
-grid = []
-start: tuple
-goal: tuple
-
-top_bar_height = 20
+TOP_BAR_HEIGHT = 20
 
 
 def main(_start=(0, 0), _goal=(30, 30)):
-    global grid, start, goal
+    grid = []
+    start: tuple
+    goal: tuple
+
 
     pygame.font.init()
 
-    font = pygame.font.SysFont('hacknerdfont', 17)
+    font = pygame.font.SysFont("hacknerdfont", 17)
     top_bar_text = font.render(
-        "LMB - draw wall, RMB - erase wall, s - set start, g - set goal, r - run / reset", True, YELLOW)
+        "LMB - draw wall, RMB - erase wall, s - set start, g - set goal, r - run / reset",
+        True,
+        YELLOW,
+    )
     success_text = font.render("GOAL REACHED", True, BLACK)
     failure_text = font.render("GOAL NOT REACHED", True, BLACK)
 
@@ -50,23 +53,21 @@ def main(_start=(0, 0), _goal=(30, 30)):
 
     success = False
 
-    path = None
+    path = []
 
-    def reset():
-        global grid, start, goal
-        grid = []
-        for _ in range((WINDOW_HEIGHT//blockSize)-2):
+    def reset() -> tuple:
+        grid.clear()
+        for _ in range((WINDOW_HEIGHT // BLOCK_SIZE) - 2):
             grid.append([])
-            for _ in range((WINDOW_WIDTH//blockSize)-2):
+            for _ in range((WINDOW_WIDTH // BLOCK_SIZE) - 2):
                 grid[-1].append(0)
-        start = _start
-        goal = _goal
-        grid[goal[1]][goal[0]] = 4
-        grid[start[1]][start[0]] = 5
-        path = None
+        grid[_goal[1]][_goal[0]] = 4
+        grid[_start[1]][_start[0]] = 5
+        path.clear()
+        return _start, _goal
 
-    reset()
-    a_star = AStar()
+    start, goal = reset()
+    a_star = AStar(grid, start, goal)
 
     def draw_top_bar():
         SCREEN.blit(top_bar_text, (0, 0))
@@ -76,13 +77,21 @@ def main(_start=(0, 0), _goal=(30, 30)):
             for x, cell in enumerate(row):
                 color = colors[cell]
                 pygame.draw.rect(
-                    SCREEN, color, (2+x*(blockSize+1), top_bar_height+2+y*(blockSize+1), blockSize, blockSize))
+                    SCREEN,
+                    color,
+                    (
+                        2 + x * (BLOCK_SIZE + 1),
+                        TOP_BAR_HEIGHT + 2 + y * (BLOCK_SIZE + 1),
+                        BLOCK_SIZE,
+                        BLOCK_SIZE,
+                    ),
+                )
 
     (width, height) = (WINDOW_WIDTH, WINDOW_HEIGHT)
     SCREEN = pygame.display.set_mode((width, height))
     SCREEN.fill((0, 0, 0))
     pygame.display.flip()
-    pygame.display.set_caption('A* showcase')
+    pygame.display.set_caption("A* showcase")
 
     running = True
 
@@ -103,7 +112,7 @@ def main(_start=(0, 0), _goal=(30, 30)):
                 path = a_star.reconstruct_path(ret)
                 for n in path[1:-1]:
                     grid[n[1]][n[0]] = 6
-            if ret == None:
+            if ret is None:
                 pathfind = False
                 finished = True
                 success = False
@@ -127,9 +136,9 @@ def main(_start=(0, 0), _goal=(30, 30)):
 
         pygame.display.flip()
         m_pos_x, m_pos_y = pygame.mouse.get_pos()
-        x, y = m_pos_x//(blockSize+1), (m_pos_y-top_bar_height)//(blockSize+1)
-        x = min(x, len(grid[0])-1)
-        y = min(y, len(grid)-1)
+        x, y = m_pos_x // (BLOCK_SIZE + 1), (m_pos_y - TOP_BAR_HEIGHT) // (BLOCK_SIZE + 1)
+        x = min(x, len(grid[0]) - 1)
+        y = min(y, len(grid) - 1)
 
         for event in pygame.event.get():
             if pathfind:
@@ -139,7 +148,7 @@ def main(_start=(0, 0), _goal=(30, 30)):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if finished:
                     finished = False
-                    reset()
+                    start, goal = reset()
                 if event.button == 1:
                     LMB_DOWN = True
                     RMB_DOWN = False
@@ -165,7 +174,7 @@ def main(_start=(0, 0), _goal=(30, 30)):
                     if grid[y][x] == 0:
                         if finished:
                             finished = False
-                            reset()
+                            start, goal = reset()
                         grid[start[1]][start[0]] = 0
                         start = (x, y)
                         grid[y][x] = 5
@@ -173,16 +182,16 @@ def main(_start=(0, 0), _goal=(30, 30)):
                     if grid[y][x] == 0:
                         if finished:
                             finished = False
-                            reset()
+                            start, goal = reset()
                         grid[goal[1]][goal[0]] = 0
                         goal = (x, y)
                         grid[y][x] = 4
                 elif event.key == ord("r"):
                     if finished:
                         finished = False
-                        reset()
+                        start, goal = reset()
                     else:
-                        a_star.main(grid, start, goal)
+                        a_star.__init__(grid, start, goal)
                         pathfind = True
 
 
